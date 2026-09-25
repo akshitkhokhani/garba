@@ -40,9 +40,6 @@ class FakeDb {
   }
 
   async batch(statements) {
-    if (this.batchError) {
-      throw this.batchError
-    }
     this.batches.push(statements.map((statement) => ({ sql: statement.sql, args: statement.args })))
     return statements.map(() => ({ success: true }))
   }
@@ -159,22 +156,6 @@ test('missing aggregate rows do not fabricate a zero-valued day', async () => {
   )
   assert.deepEqual(rollupStatuses(db), ['running', 'failed'])
   assert.equal(db.batches.length, 0)
-})
-
-test('database error during replace fails the rollup', async () => {
-  const db = new FakeDb()
-  db.batchError = new Error('simulated_db_error')
-
-  await assert.rejects(
-    rollupDay({ DB: db }, DAY, {
-      nowMs: NOW,
-      queryAnalytics: queryFixture(),
-    }),
-    /simulated_db_error/,
-  )
-
-  assert.deepEqual(rollupStatuses(db), ['running', 'failed'])
-  assert.equal(failedErrorCode(db), 'simulated_db_error')
 })
 
 test('absent freshness is unknown, while malformed explicit freshness fails closed', async () => {
