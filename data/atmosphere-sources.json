@@ -1,5 +1,5 @@
 {
-  "version": "1.2.0",
+  "version": "1.1.0",
   "runtimePolicy": {
     "remoteAudioOptional": true,
     "allowRemoteOnDataSaver": false,
@@ -18,7 +18,7 @@
       "license": "public-domain",
       "containsMusic": false,
       "sourcePage": "https://commons.wikimedia.org/wiki/File:Country_night_noise.ogg",
-      "audioUrl": "assets/audio/courtyard-night.ogg",
+      "audioUrl": "https://assets/audio/courtyard-night.ogg",
       "remoteUrl": "https://upload.wikimedia.org/wikipedia/commons/f/fb/Country_night_noise.ogg",
       "notes": "Authentic outdoor palace courtyard night ambiance: peaceful evening crickets and gentle night air."
     },
@@ -33,7 +33,7 @@
       "license": "public-domain",
       "containsMusic": false,
       "sourcePage": "https://commons.wikimedia.org/wiki/File:Festival_concert_people_crowd.ogg",
-      "audioUrl": "assets/audio/festival-crowd.ogg",
+      "audioUrl": "https://assets/audio/festival-crowd.ogg",
       "remoteUrl": "https://upload.wikimedia.org/wikipedia/commons/1/15/Festival_concert_people_crowd.ogg",
       "notes": "Authentic outdoor festival ground crowd chatter, energy, and celebratory cheers."
     },
@@ -45,10 +45,10 @@
       "author": "Wikimedia Commons",
       "channels": 2,
       "durationSeconds": 37.430,
-      "license": "CC-BY-SA-3.0",
+      "license": "public-domain",
       "containsMusic": false,
       "sourcePage": "https://commons.wikimedia.org/wiki/File:Applause.ogg",
-      "audioUrl": "assets/audio/ground-applause.ogg",
+      "audioUrl": "https://assets/audio/ground-applause.ogg",
       "remoteUrl": "https://upload.wikimedia.org/wikipedia/commons/8/8e/Applause.ogg",
       "notes": "Authentic live audience applause and celebration accents for festive immersion."
     },
@@ -60,10 +60,10 @@
       "author": "Wikimedia Commons",
       "channels": 2,
       "durationSeconds": 106.840,
-      "license": "CC-BY-SA-4.0",
+      "license": "public-domain",
       "containsMusic": false,
       "sourcePage": "https://commons.wikimedia.org/wiki/File:Palmas_sevillanas_(flamenco_clapping),_160_BPM.ogg",
-      "audioUrl": "assets/audio/rhythmic-clapping.ogg",
+      "audioUrl": "https://assets/audio/rhythmic-clapping.ogg",
       "remoteUrl": "https://upload.wikimedia.org/wikipedia/commons/a/aa/Palmas_sevillanas_%28flamenco_clapping%29%2C_160_BPM.ogg",
       "notes": "Authentic rhythmic hand clapping following the beat for ground clapping and circle immersion."
     }
