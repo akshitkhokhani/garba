@@ -89,8 +89,8 @@ async function runFixture({ name, engine, viewport, verifyAutoStop = false }) {
     assert.ok(bounds.x + bounds.width <= viewport.width + 0.5, `${name}: panel overflows viewport horizontally`);
     assert.ok(bounds.y + bounds.height <= viewport.height + 0.5, `${name}: panel overflows viewport vertically`);
 
-    await page.locator('.atmosphere-mode[data-mode="courtyard"]').click();
-    await waitFor(page, () => window.GARBA_ATMOSPHERE?.mode === 'courtyard', `${name}: Courtyard mode did not apply`);
+    await page.locator('.atmosphere-mode[data-mode="crowd"]').click();
+    await waitFor(page, () => window.GARBA_ATMOSPHERE?.mode === 'crowd', `${name}: Courtyard mode did not apply`);
     assert.equal(await slider.isDisabled(), false, `${name}: enabled mode must enable intensity`);
     assert.equal(await test.getAttribute('aria-pressed'), 'false', `${name}: selecting a mode must not auto-start Test`);
     assert.equal(await page.evaluate(() => window.GARBA_ATMOSPHERE.active), false, `${name}: paused mode selection must remain silent`);
