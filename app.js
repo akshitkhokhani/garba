@@ -846,6 +846,105 @@ function getSheetSongs() {
   return songs;
 }
 
+function updateSheetSummary(songs, query) {
+  if (!els.sheetSummary) return;
+
+  if (state.sheetMode === 'search') {
+    if (!query) els.sheetSummary.textContent = `${state.songs.length.toLocaleString()} songs`;
+    else if (state.sheetMatchCount > songs.length) els.sheetSummary.textContent = `Showing ${songs.length} of ${state.sheetMatchCount.toLocaleString()}`;
+    else els.sheetSummary.textContent = `${state.sheetMatchCount.toLocaleString()} ${state.sheetMatchCount === 1 ? 'match' : 'matches'}`;
+  } else if (state.sheetMode === 'queue') {
+    const queued = manualQueueSongs().length;
+    const continuing = Math.max(0, songs.length - queued);
+    els.sheetSummary.textContent = queued ? `${queued} queued · ${continuing} continue` : `${continuing} continue`;
+  } else {
+    els.sheetSummary.textContent = `${state.sheetMatchCount.toLocaleString()} ${state.sheetMatchCount === 1 ? 'song' : 'songs'}`;
+  }
+}
+
+function renderEmptySheetState(query) {
+  const empty = document.createElement('div');
+  empty.className = 'empty-state';
+  const strong = document.createElement('strong');
+  const copy = document.createElement('span');
+  if (state.sheetMode === 'favourites') {
+    strong.textContent = 'My Garba is empty';
+    copy.textContent = 'Tap the heart beside a song to save it here.';
+  } else if (state.sheetMode === 'queue') {
+    strong.textContent = 'Nothing up next';
+    copy.textContent = 'Choose a genre or another song to continue listening.';
+  } else if (state.sheetMode === 'search' && !query) {
+    strong.textContent = `Search ${state.songs.length.toLocaleString()} songs`;
+    copy.textContent = 'Type a song, artist, genre or style to see matching results.';
+  } else {
+    strong.textContent = 'No songs found';
+    copy.textContent = query ? 'Try a different search.' : 'This genre is waiting for catalogue data.';
+  }
+  empty.append(strong, copy);
+  return empty;
+}
+
+function createSongRow(song, index, queued) {
+  const row = document.createElement('div');
+  row.className = `song-row${song.id === state.songId ? ' current' : ''}`;
+  row.role = 'listitem';
+
+  const idx = document.createElement('span');
+  idx.className = 'song-index';
+  idx.textContent = String(index + 1).padStart(2, '0');
+
+  const copy = document.createElement('button');
+  copy.type = 'button';
+  copy.className = 'song-copy';
+  copy.setAttribute('aria-label', `Play ${song.title} by ${song.artist}`);
+  const title = document.createElement('strong');
+  title.textContent = song.title;
+  const artist = document.createElement('small');
+  artist.textContent = song.artist;
+  copy.append(title, artist);
+  const releaseContinuation = state.sheetMode === 'queue'
+    && !queued
+    && releaseContinuationSongs().some((entry) => entry.id === song.id);
+  copy.addEventListener('click', () => selectSong(song.id, {
+    keepSheet: true,
+    preserveContext: queued || releaseContinuation,
+    preserveReleaseContext: queued || releaseContinuation,
+    releaseContextAdvance: releaseContinuation,
+    consumeQueued: queued,
+    preservePlayback: true,
+    forceAutoplay: true,
+  }));
+
+  const duration = document.createElement('span');
+  duration.className = 'song-duration';
+  duration.textContent = formatDuration(song.durationSeconds);
+
+  const queuePlayable = Boolean(song.youtubeId);
+  const queueAction = document.createElement('button');
+  queueAction.type = 'button';
+  queueAction.className = 'song-queue-action';
+  queueAction.hidden = !queuePlayable || song.id === state.songId;
+  queueAction.disabled = !queuePlayable || song.id === state.songId;
+  queueAction.setAttribute('aria-label', queued ? `Remove ${song.title} from Up next` : `Play ${song.title} next`);
+  queueAction.title = queued ? 'Remove from Up next' : 'Play next';
+  queueAction.innerHTML = queued
+    ? '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7l10 10M17 7 7 17"></path></svg>'
+    : '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h8M5 12h8M5 17h5"></path><path d="M17 8v9M13.5 13.5 17 17l3.5-3.5"></path></svg>';
+  queueAction.addEventListener('click', () => queued ? removeQueuedSong(song.id) : queueSong(song.id));
+
+  const favourite = document.createElement('button');
+  favourite.type = 'button';
+  favourite.className = `heart-button song-favourite${state.favourites.has(song.id) ? ' active' : ''}`;
+  favourite.setAttribute('aria-label', state.favourites.has(song.id) ? `Remove ${song.title} from My Garba` : `Save ${song.title} to My Garba`);
+  favourite.setAttribute('aria-pressed', String(state.favourites.has(song.id)));
+  favourite.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.8 4.9a5.5 5.5 0 0 0-7.8 0L12 5.9l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.3 1-1a5.5 5.5 0 0 0 0-7.8Z"></path></svg>';
+  favourite.addEventListener('click', () => toggleFavourite(song.id));
+
+  row.classList.toggle('manually-queued', queued);
+  row.append(idx, copy, duration, queueAction, favourite);
+  return row;
+}
+
 function renderSheet() {
   els.songSheet.classList.toggle('mode-favourites', state.sheetMode === 'favourites');
   els.songSheet.classList.toggle('mode-queue', state.sheetMode === 'queue');
@@ -864,40 +963,10 @@ function renderSheet() {
   const songs = getSheetSongs();
   els.songList.innerHTML = '';
 
-  if (els.sheetSummary) {
-    if (state.sheetMode === 'search') {
-      if (!query) els.sheetSummary.textContent = `${state.songs.length.toLocaleString()} songs`;
-      else if (state.sheetMatchCount > songs.length) els.sheetSummary.textContent = `Showing ${songs.length} of ${state.sheetMatchCount.toLocaleString()}`;
-      else els.sheetSummary.textContent = `${state.sheetMatchCount.toLocaleString()} ${state.sheetMatchCount === 1 ? 'match' : 'matches'}`;
-    } else if (state.sheetMode === 'queue') {
-      const queued = manualQueueSongs().length;
-      const continuing = Math.max(0, songs.length - queued);
-      els.sheetSummary.textContent = queued ? `${queued} queued · ${continuing} continue` : `${continuing} continue`;
-    } else {
-      els.sheetSummary.textContent = `${state.sheetMatchCount.toLocaleString()} ${state.sheetMatchCount === 1 ? 'song' : 'songs'}`;
-    }
-  }
+  updateSheetSummary(songs, query);
 
   if (!songs.length) {
-    const empty = document.createElement('div');
-    empty.className = 'empty-state';
-    const strong = document.createElement('strong');
-    const copy = document.createElement('span');
-    if (state.sheetMode === 'favourites') {
-      strong.textContent = 'My Garba is empty';
-      copy.textContent = 'Tap the heart beside a song to save it here.';
-    } else if (state.sheetMode === 'queue') {
-      strong.textContent = 'Nothing up next';
-      copy.textContent = 'Choose a genre or another song to continue listening.';
-    } else if (state.sheetMode === 'search' && !query) {
-      strong.textContent = `Search ${state.songs.length.toLocaleString()} songs`;
-      copy.textContent = 'Type a song, artist, genre or style to see matching results.';
-    } else {
-      strong.textContent = 'No songs found';
-      copy.textContent = query ? 'Try a different search.' : 'This genre is waiting for catalogue data.';
-    }
-    empty.append(strong, copy);
-    els.songList.append(empty);
+    els.songList.append(renderEmptySheetState(query));
     return;
   }
 
@@ -926,63 +995,8 @@ function renderSheet() {
       label.textContent = 'Continue playing';
       fragment.append(label);
     }
-    const row = document.createElement('div');
-    row.className = `song-row${song.id === state.songId ? ' current' : ''}`;
-    row.role = 'listitem';
 
-    const idx = document.createElement('span');
-    idx.className = 'song-index';
-    idx.textContent = String(index + 1).padStart(2, '0');
-
-    const copy = document.createElement('button');
-    copy.type = 'button';
-    copy.className = 'song-copy';
-    copy.setAttribute('aria-label', `Play ${song.title} by ${song.artist}`);
-    const title = document.createElement('strong');
-    title.textContent = song.title;
-    const artist = document.createElement('small');
-    artist.textContent = song.artist;
-    copy.append(title, artist);
-    const releaseContinuation = state.sheetMode === 'queue'
-      && !queued
-      && releaseContinuationSongs().some((entry) => entry.id === song.id);
-    copy.addEventListener('click', () => selectSong(song.id, {
-      keepSheet: true,
-      preserveContext: queued || releaseContinuation,
-      preserveReleaseContext: queued || releaseContinuation,
-      releaseContextAdvance: releaseContinuation,
-      consumeQueued: queued,
-      preservePlayback: true,
-      forceAutoplay: true,
-    }));
-
-    const duration = document.createElement('span');
-    duration.className = 'song-duration';
-    duration.textContent = formatDuration(song.durationSeconds);
-
-    const queuePlayable = Boolean(song.youtubeId);
-    const queueAction = document.createElement('button');
-    queueAction.type = 'button';
-    queueAction.className = 'song-queue-action';
-    queueAction.hidden = !queuePlayable || song.id === state.songId;
-    queueAction.disabled = !queuePlayable || song.id === state.songId;
-    queueAction.setAttribute('aria-label', queued ? `Remove ${song.title} from Up next` : `Play ${song.title} next`);
-    queueAction.title = queued ? 'Remove from Up next' : 'Play next';
-    queueAction.innerHTML = queued
-      ? '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7l10 10M17 7 7 17"></path></svg>'
-      : '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h8M5 12h8M5 17h5"></path><path d="M17 8v9M13.5 13.5 17 17l3.5-3.5"></path></svg>';
-    queueAction.addEventListener('click', () => queued ? removeQueuedSong(song.id) : queueSong(song.id));
-
-    const favourite = document.createElement('button');
-    favourite.type = 'button';
-    favourite.className = `heart-button song-favourite${state.favourites.has(song.id) ? ' active' : ''}`;
-    favourite.setAttribute('aria-label', state.favourites.has(song.id) ? `Remove ${song.title} from My Garba` : `Save ${song.title} to My Garba`);
-    favourite.setAttribute('aria-pressed', String(state.favourites.has(song.id)));
-    favourite.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.8 4.9a5.5 5.5 0 0 0-7.8 0L12 5.9l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.3 1-1a5.5 5.5 0 0 0 0-7.8Z"></path></svg>';
-    favourite.addEventListener('click', () => toggleFavourite(song.id));
-
-    row.classList.toggle('manually-queued', queued);
-    row.append(idx, copy, duration, queueAction, favourite);
+    const row = createSongRow(song, index, queued);
     fragment.append(row);
   });
 
