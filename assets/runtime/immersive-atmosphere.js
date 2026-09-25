@@ -12,14 +12,14 @@
 
   const MODES = {
     off: { label: 'Off', desc: 'Direct clean playback', master: 0, events: 0, crowd: 0, clapping: 0, spatial: false },
-    crowd: { label: 'Festival Crowd', desc: 'Live ground energy & cheers', master: 0.22, events: 0.35, crowd: 0.85, clapping: 0, spatial: false },
+    crowd: { label: 'Live Ground', desc: 'Live ground energy & cheers', master: 0.22, events: 0.35, crowd: 0.85, clapping: 0, spatial: false },
     clapping: { label: 'Beat Clapping', desc: 'Rhythmic ground handclaps', master: 0.24, events: 0.35, crowd: 0, clapping: 0.85, spatial: false },
-    immersive: { label: 'Circle 360°', desc: 'Surround crowd & rhythm', master: 0.28, events: 0.45, crowd: 0.72, clapping: 0.72, spatial: true },
+    immersive: { label: 'Immersive 360°', desc: 'Surround crowd & rhythm', master: 0.28, events: 0.45, crowd: 0.72, clapping: 0.72, spatial: true },
   };
 
   const ENVIRONMENTS = {
     outdoor: {
-      label: 'Outdoor Ground',
+      label: 'Courtyard',
       icon: '🏟️',
       desc: 'Open-air stadium slapback echo',
       delay: 0.165,
@@ -29,7 +29,7 @@
       dry: 0.88,
     },
     indoor: {
-      label: 'Indoor Hall',
+      label: 'Palace Hall',
       icon: '🏛️',
       desc: 'Palace walls & mandap reverb',
       delay: 0.042,
@@ -555,7 +555,8 @@
 
   async function startAtmosphereBeds(profile, generation) {
     stopBeds();
-    if (!profile || state.mode === 'off' || constrainedConnection()) return;
+    if (!profile?.crowd || constrainedConnection()) return;
+    if (state.mode === 'off') return;
 
     // 1. Festival Crowd Bed
     if (profile.crowd > 0) {
