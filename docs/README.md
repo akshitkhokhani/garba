@@ -37,6 +37,7 @@ Documentation is grouped by responsibility so product work, catalogue policy, ri
 - [`product/playback-runtime-coverage.md`](product/playback-runtime-coverage.md): generated song-route and playback coverage contract
 - [`product/playback-controller.md`](product/playback-controller.md): single playback authority, command, transport-evidence and migration contract
 - [`product/youtube-first-playback.md`](product/youtube-first-playback.md): one-tap YouTube IFrame playback architecture, route safety and provider fallback hierarchy
+- [`product/garba-circle.md`](product/garba-circle.md): listening together in sync without a backend: shared schedule, Date-header clock sync, drift correction and limits
 - [`product/responsive-pwa.md`](product/responsive-pwa.md): responsive and installed-app behaviour
 - [`product/player-release-acceptance.md`](product/player-release-acceptance.md): finite, evidence-backed player release gate and listening journeys
 - [`product/ux-polish-pass.md`](product/ux-polish-pass.md): product polish notes and remaining UX work
